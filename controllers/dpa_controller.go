@@ -144,12 +144,13 @@ func (r *DPAReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&corev1.Service{}).
 		Owns(&routev1.Route{}).
 		Owns(&corev1.ConfigMap{}).
-		Watches(&source.Kind{Type: &corev1.Secret{}}, &labelHandler{}).
+		Watches(&source.Kind{Type: &corev1.Secret{}}, &labelHandler{Log: r.Log}).
 		WithEventFilter(veleroPredicate(r.Scheme)).
 		Complete(r)
 }
 
 type labelHandler struct {
+	Log logr.Logger
 }
 
 func (l *labelHandler) Create(evt event.CreateEvent, q workqueue.RateLimitingInterface) {
@@ -164,7 +165,7 @@ func (l *labelHandler) Create(evt event.CreateEvent, q workqueue.RateLimitingInt
 		Name:      dpaname,
 		Namespace: namespace,
 	}})
-
+	l.Log.Info("Secret created: reconcile loop triggered")
 }
 func (l *labelHandler) Delete(evt event.DeleteEvent, q workqueue.RateLimitingInterface) {
 
@@ -177,7 +178,7 @@ func (l *labelHandler) Delete(evt event.DeleteEvent, q workqueue.RateLimitingInt
 		Name:      dpaname,
 		Namespace: namespace,
 	}})
-
+	l.Log.Info("Secret deleted: reconcile loop triggered")
 }
 func (l *labelHandler) Update(evt event.UpdateEvent, q workqueue.RateLimitingInterface) {
 	namespace := evt.ObjectNew.GetNamespace()
@@ -189,7 +190,7 @@ func (l *labelHandler) Update(evt event.UpdateEvent, q workqueue.RateLimitingInt
 		Name:      dpaname,
 		Namespace: namespace,
 	}})
-
+	l.Log.Info("Secret updated: reconcile loop triggered")
 }
 func (l *labelHandler) Generic(evt event.GenericEvent, q workqueue.RateLimitingInterface) {
 
@@ -202,6 +203,7 @@ func (l *labelHandler) Generic(evt event.GenericEvent, q workqueue.RateLimitingI
 		Name:      dpaname,
 		Namespace: namespace,
 	}})
+	l.Log.Info("Secret generic event: reconcile loop triggered")
 
 }
 
